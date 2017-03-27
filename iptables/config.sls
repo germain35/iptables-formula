@@ -1,4 +1,7 @@
 # reset policies
+include:
+  - iptables.install 
+
 {%- for ipfamily in ['ipv4', 'ipv6'] %}
 iptables_reset_policy_{{ ipfamily }}:
   iptables.set_policy:
