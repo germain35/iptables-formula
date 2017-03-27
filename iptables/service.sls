@@ -20,6 +20,7 @@
     {% set block_nomatch = service_details.get('block_nomatch', False) %}
     {% set interfaces = service_details.get('interfaces','') %}
     {% set protos = service_details.get('protos',['tcp']) %}
+    {% set ports = service_details.get('ports',service_name) %}
     {% if service_details.get('comment', False) %}
       {% set comment = '- comment: ' + service_details.get('comment') %}
     {% else %}
@@ -36,7 +37,7 @@
     - chain: INPUT
     - jump: ACCEPT
     - source: {{ ip }}
-    - dport: {{ service_name }}
+    - dports: {{ ports|join(',') }}
     - proto: {{ proto }}
     - save: True
     {{ comment }}
@@ -50,7 +51,7 @@
     - chain: INPUT
     - jump: ACCEPT
     - source: {{ ip }}
-    - dport: {{ service_name }}
+    - dports: {{ ports|join(',') }}
     - proto: {{ proto }}
     - i: {{ interface }}
     - save: True
@@ -70,7 +71,7 @@
     - table: filter
     - chain: INPUT
     - jump: REJECT
-    - dport: {{ service_name }}
+    - dports: {{ ports|join(',') }}
     - proto: {{ proto }}
     - save: True
     {{ comment }}
@@ -85,7 +86,7 @@
     - chain: INPUT
     - jump: REJECT
     - i: {{ interface }}
-    - dport: {{ service_name }}
+    - dports: {{ ports|join(',') }}
     - proto: {{ proto }}
     - save: True
     {{ comment }}
