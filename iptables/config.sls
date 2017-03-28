@@ -59,7 +59,7 @@ iptables_allow_established_{{ ipfamily }}:
 
 # Generate rules for whitelisting IP classes
 {%- for ip in iptables.get('whitelist', {}) %}
-iptables{{ip}}_allow:
+iptables_allow_{{ip}}:
   iptables.append:
      - table: filter
      - chain: INPUT
@@ -69,7 +69,7 @@ iptables{{ip}}_allow:
 {%- endfor %}
 
 {%- for service, params in services.items() %}
-iptables_{{service}}_allow:
+iptables_allow_{{service}}:
   iptables.append:
     - table: filter
     - chain: INPUT
@@ -107,7 +107,7 @@ iptables_enable_reject_policy_{{ ipfamily }}:
     - family: {{ ipfamily }}
     - require:
       - iptables: iptables_reset_policy_*
-      - iptables: iptables_*_allow
+      - iptables: iptables_allow_*
   {%- endfor %}
 {%- endif %}
 
