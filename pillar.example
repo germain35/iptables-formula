@@ -19,3 +19,12 @@ iptables:
       comment: "transmission"
       ports: 9091
       interface: eth0
+  forward:
+    hostapd:
+      in_interface: wlan0
+      out_interface: eth0
+  nat:
+    hostapd:
+      out_interface: eth0
+      source: 192.168.18.0/24
+      destination: 10.20.0.2
