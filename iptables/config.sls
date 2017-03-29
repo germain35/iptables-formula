@@ -95,6 +95,8 @@ iptables_allow_{{service}}:
     - save: True
     - require:
       - iptables: iptables_allow_established_*
+    - require_in:
+      - iptables_INPUT_enable_reject_policy_*
 {%- endfor %}
 
 {%- for service, params in forward.items() %}
@@ -177,7 +179,6 @@ iptables_FORWARD_enable_reject_policy_{{ ipfamily }}:
     - family: {{ ipfamily }}
     - require:
       - iptables: iptables_reset_policy_*
-      - iptables: iptables_forward_allow_*
   {%- endfor %}
 {%- endif %}
 
