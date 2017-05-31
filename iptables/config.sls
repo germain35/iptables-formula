@@ -118,7 +118,7 @@ iptables_rule_{{table}}_{{chain}}_{{rule}}_{{jump}}:
     {%- endfor %}
 
     {%- for ipfamily in ['ipv4', 'ipv6'] %}
-iptables_policy_{{table}_{{chain}}_{{ ipfamily }}:
+iptables_policy_{{table}}_{{chain}}_{{ ipfamily }}:
   iptables.set_policy:
     - table: {{table|lower}}
     - chain: {{chain|upper}}
