@@ -113,7 +113,7 @@ iptables_rule_{{table}}_{{chain}}_{{rule}}_{{jump}}:
     - require:
       - iptables: iptables_allow_established_*
     - require_in:
-      - iptables_policy_{{table}_{{chain}}_*
+      - iptables_policy_{{table}}_{{chain}}_*
 
     {%- endfor %}
 
