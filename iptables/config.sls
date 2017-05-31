@@ -126,7 +126,6 @@ iptables_policy_{{table}}_{{chain}}_{{ ipfamily }}:
     - family: {{ ipfamily }}
     - require:
       - iptables: iptables_reset_policy_*
-      - iptables: iptables_rule_{{table}}_{{chain}}_*
     {%- endfor %}
 
   {%- endfor %}
