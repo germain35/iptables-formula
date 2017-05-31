@@ -97,8 +97,8 @@ iptables_rule_{{table}}_{{chain}}_{{rule}}_{{jump}}:
     - dports: {{ params.ports|default(service) }}
     {%- endif %}
     - proto: {{ params.proto|default('tcp') }}
-    {%- if params.interface is defined %}
-    - in-interface: {{ params.interface }}
+    {%- if params.in_interface is defined %}
+    - in-interface: {{ params.in_interface }}
     {%- endif %}
     {%- if params.out_interface is defined %}
     - out-interface: {{ params.out_interface }}
