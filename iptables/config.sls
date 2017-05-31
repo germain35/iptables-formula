@@ -1,9 +1,6 @@
 {%- if salt['pillar.get']('iptables:enabled') %}
-  {% set iptables    = salt['pillar.get']('iptables', {}) %}
-  {% set services    = iptables.get('services', {}) %}
-  {% set forward     = iptables.get('forward', {}) %}
-  {% set nat         = iptables.get('nat', {}) %}
-  {% set strict_mode = iptables.get('strict', false) %}
+  {%- set iptables = salt['pillar.get']('iptables', {}) %}
+  {%- set tables   = iptables.get('tables', {}) %}
 
 # reset policies
 include:
@@ -70,12 +67,20 @@ iptables_allow_{{ip}}:
      - save: True
 {%- endfor %}
 
-{%- for service, params in services.items() %}
-iptables_allow_{{service}}:
+
+
+{%- for table, table_params in tables.items() %}
+  {%- set chains = table_params.get('chains', {}) %}
+  {%- for chain, chain_params in chains.items() %}
+    {%- set policy = chain_params.get('policy', 'ACCEPT')|upper %}
+    {%- set rules  = chain_params.get('rules', {}) %}
+    {%- for rule, params in rules.items() %}
+      {%- set jump = params.get('jump', 'ACCEPT')|upper %}
+iptables_rule_{{table}}_{{chain}}_{{rule}}_{{jump}}:
   iptables.append:
-    - table: filter
-    - chain: INPUT
-    - jump: ACCEPT
+    - table: {{table|lower}}
+    - chain: {{chain|upper}}
+    - jump: {{jump|upper}}
     {%- if params.position is defined %}
     - position: {{ params.position }}
     {%- endif %}
@@ -84,6 +89,9 @@ iptables_allow_{{service}}:
     {%- endif %}
     {%- if params.source is defined %}
     - source: {{ params.source }}
+    {%- endif %}
+    {%- if params.destination is defined %}
+    - destination: {{ params.destination }}
     {%- endif %}
     {%- if params.ports is defined %}
     - dports: {{ params.ports|default(service) }}
@@ -92,94 +100,35 @@ iptables_allow_{{service}}:
     {%- if params.interface is defined %}
     - in-interface: {{ params.interface }}
     {%- endif %}
+    {%- if params.out_interface is defined %}
+    - out-interface: {{ params.out_interface }}
+    {%- endif %}
+    {%- if params.match is defined %}
+    - match: {{ params.match }}
+    {%- endif %}
+    {%- if params.connstate is defined %}
+    - connstate: {{ params.connstate|join(',') }}
+    {%- endif %}
     - save: True
     - require:
       - iptables: iptables_allow_established_*
     - require_in:
-      - iptables_INPUT_enable_reject_policy_*
-{%- endfor %}
+      - iptables_policy_{{table}_{{chain}}_*
 
-{%- for service, params in forward.items() %}
-iptables_forward_allow_{{service}}:
-  iptables.append:
-    - table: filter
-    - chain: FORWARD
-    - jump: ACCEPT
-    {%- if params.position is defined %}
-    - position: {{ params.position }}
-    {%- endif %}
-    {%- if params.comment is defined %}
-    - comment: {{ params.comment }}
-    {%- endif %}
-    {%- if params.source is defined %}
-    - source: {{ params.source }}
-    {%- endif %}
-    {%- if params.destination is defined %}
-    - destination: {{ params.destination }}
-    {%- endif %}
-    {%- if params.in_interface is defined %}
-    - in-interface: {{ params.in_interface }}
-    {%- endif %}
-    {%- if params.out_interface is defined %}
-    - out-interface: {{ params.out_interface }}
-    {%- endif %}
-    - save: True
-    - require:
-      - iptables: iptables_allow_established_*
-{%- endfor %}
+    {%- endfor %}
 
-{%- for service, params in nat.items() %}
-iptables_nat_allow_{{service}}:
-  iptables.append:
-    - table: nat
-    - chain: POSTROUTING
-    - jump: MASQUERADE
-    {%- if params.position is defined %}
-    - position: {{ params.position }}
-    {%- endif %}
-    {%- if params.comment is defined %}
-    - comment: {{ params.comment }}
-    {%- endif %}
-    {%- if params.source is defined %}
-    - source: {{ params.source }}
-    {%- endif %}
-    {%- if params.destination is defined %}
-    - destination: {{ params.destination }}
-    {%- endif %}
-    {%- if params.in_interface is defined %}
-    - in-interface: {{ params.in_interface }}
-    {%- endif %}
-    {%- if params.out_interface is defined %}
-    - out-interface: {{ params.out_interface }}
-    {%- endif %}
-    - save: True
-    - require:
-      - iptables: iptables_allow_established_*
-{%- endfor %}
-
-
-{%- if strict_mode %}
-# Set the policy to deny everything unless defined
-  {%- for ipfamily in ['ipv4', 'ipv6'] %}
-iptables_INPUT_enable_reject_policy_{{ ipfamily }}:
+    {%- for ipfamily in ['ipv4', 'ipv6'] %}
+iptables_policy_{{table}_{{chain}}_{{ ipfamily }}:
   iptables.set_policy:
-    - table: filter
-    - chain: INPUT
-    - policy: DROP
+    - table: {{table|lower}}
+    - chain: {{chain|upper}}
+    - policy: {{policy|upper}}
     - family: {{ ipfamily }}
     - require:
       - iptables: iptables_reset_policy_*
-      - iptables: iptables_allow_*
+      - iptables: iptables_rule_{{table}}_{{chain}}_*
+    {%- endfor %}
 
-iptables_FORWARD_enable_reject_policy_{{ ipfamily }}:
-  iptables.set_policy:
-    - table: filter
-    - chain: FORWARD
-    - policy: DROP
-    - family: {{ ipfamily }}
-    - require:
-      - iptables: iptables_reset_policy_*
   {%- endfor %}
-{%- endif %}
+{%- endfor %}
 
-{%- endif %}
