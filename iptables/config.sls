@@ -114,7 +114,6 @@ iptables_rule_{{table}}_{{chain}}_{{rule}}_{{jump}}:
       - iptables: iptables_allow_established_*
     - require_in:
       - iptables: iptables_policy_{{table}}_{{chain}}_*
-
     {%- endfor %}
 
     {%- for ipfamily in ['ipv4', 'ipv6'] %}
