@@ -131,4 +131,5 @@ iptables_policy_{{table}}_{{chain}}_{{ ipfamily }}:
 
   {%- endfor %}
 {%- endfor %}
+{%- endif %}
 
