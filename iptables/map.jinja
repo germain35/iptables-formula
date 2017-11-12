@@ -5,4 +5,4 @@
     'RedHat': {
         'packages': ['iptables']
     },
-}, grain='os_family', merge=salt['pillar.get']('iptables:lookup'), default='Debian') %}
+}, grain='os_family', merge=salt['pillar.get']('iptables'), default='Debian') %}
