@@ -2,4 +2,6 @@
 
 include:
   - iptables.install
+  {%- if salt['pillar.get']('iptables:enabled', True) %}
   - iptables.config
+  {%- endif %}

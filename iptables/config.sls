@@ -1,10 +1,11 @@
-{%- if salt['pillar.get']('iptables:enabled') %}
-  {%- set iptables = salt['pillar.get']('iptables', {}) %}
-  {%- set tables   = iptables.get('tables', {}) %}
 
 # reset policies
 include:
   - iptables.install 
+
+{%- if salt['pillar.get']('iptables:enabled', True) %}
+  {%- set iptables = salt['pillar.get']('iptables', {}) %}
+  {%- set tables   = iptables.get('tables', {}) %}
 
 {%- for ipfamily in ['ipv4', 'ipv6'] %}
 iptables_reset_policy_{{ ipfamily }}:
