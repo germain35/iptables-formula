@@ -22,7 +22,7 @@ iptables_reset_policy_filter_{{ ipfamily }}:
   {%- endfor %}
 {%- endfor %}
 
-{%- for chain in ['PREROUTING', INPUT', 'FORWARD', 'OUTPUT', 'POSTROUTING'] %}
+{%- for chain in ['PREROUTING', 'INPUT', 'FORWARD', 'OUTPUT', 'POSTROUTING'] %}
   {%- for ipfamily in ['ipv4', 'ipv6'] %}
 iptables_reset_policy_mangle_{{ ipfamily }}:
   iptables.set_policy:
@@ -35,7 +35,7 @@ iptables_reset_policy_mangle_{{ ipfamily }}:
   {%- endfor %}
 {%- endfor %}
 
-{%- for chain in ['PREROUTING', INPUT', 'OUTPUT', 'POSTROUTING'] %}
+{%- for chain in ['PREROUTING', 'INPUT', 'OUTPUT', 'POSTROUTING'] %}
   {%- for ipfamily in ['ipv4', 'ipv6'] %}
 iptables_reset_policy_nat_{{ ipfamily }}:
   iptables.set_policy:
