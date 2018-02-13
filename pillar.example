@@ -1,5 +1,6 @@
 iptables:
-  enabled: true
+  enabled: True
+  reset: True
   whitelist:
     - 192.168.0.0/16
     - 10.0.0.0/16

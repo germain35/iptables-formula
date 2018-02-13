@@ -1,31 +1,63 @@
+{%- from "iptables/map.jinja" import iptables with context %}
 
 # reset policies
 include:
   - iptables.install 
 
-{%- if salt['pillar.get']('iptables:enabled', True) %}
-  {%- set iptables = salt['pillar.get']('iptables', {}) %}
+{%- if iptables.enabled %}
   {%- set tables   = iptables.get('tables', {}) %}
 
-{%- for ipfamily in ['ipv4', 'ipv6'] %}
-iptables_reset_policy_{{ ipfamily }}:
+  {%- if iptables.reset %}
+
+{%- for chain in ['INPUT', 'FORWARD', 'OUTPUT'] %}
+  {%- for ipfamily in ['ipv4', 'ipv6'] %}
+iptables_reset_policy_filter_{{ ipfamily }}:
   iptables.set_policy:
     - table: filter
-    - chain: INPUT
+    - chain: {{ chain }}
     - policy: ACCEPT
     - family: {{ ipfamily }}
     - require:
       - sls: iptables.install
+  {%- endfor %}
+{%- endfor %}
+
+{%- for chain in ['PREROUTING', INPUT', 'FORWARD', 'OUTPUT', 'POSTROUTING'] %}
+  {%- for ipfamily in ['ipv4', 'ipv6'] %}
+iptables_reset_policy_mangle_{{ ipfamily }}:
+  iptables.set_policy:
+    - table: mangle
+    - chain: {{ chain }}
+    - policy: ACCEPT
+    - family: {{ ipfamily }}
+    - require:
+      - sls: iptables.install
+  {%- endfor %}
+{%- endfor %}
+
+{%- for chain in ['PREROUTING', INPUT', 'OUTPUT', 'POSTROUTING'] %}
+  {%- for ipfamily in ['ipv4', 'ipv6'] %}
+iptables_reset_policy_nat_{{ ipfamily }}:
+  iptables.set_policy:
+    - table: nat
+    - chain: {{ chain }}
+    - policy: ACCEPT
+    - family: {{ ipfamily }}
+    - require:
+      - sls: iptables.install
+  {%- endfor %}
 {%- endfor %}
 
 # Flush
-{%- for ipfamily in ['ipv4', 'ipv6'] %}
-iptables_flush_{{ ipfamily }}:
+{%- for table in ['filter', 'mangle', 'nat'] %}
+  {%- for ipfamily in ['ipv4', 'ipv6'] %}
+iptables_flush_{{ table }}_{{ ipfamily }}:
   iptables.flush:
-    - table: filter
+    - table: {{ table }}
     - family: {{ ipfamily }}
     - require:
       - iptables: iptables_reset_policy_*
+  {%- endfor %}
 {%- endfor %}
 
 # accept all traffic on loopback
@@ -56,6 +88,8 @@ iptables_allow_established_{{ ipfamily }}:
     - require:
       - iptables: iptables_allow_localhost_*
 {%- endfor %}      
+
+{%- endif %}
 
 # Generate rules for whitelisting IP classes
 {%- for ip in iptables.get('whitelist', {}) %}
@@ -111,8 +145,6 @@ iptables_rule_{{table}}_{{chain}}_{{rule}}_{{jump}}:
     - connstate: {{ params.connstate|join(',') }}
     {%- endif %}
     - save: True
-    - require:
-      - iptables: iptables_allow_established_*
     - require_in:
       - iptables: iptables_policy_{{table}}_{{chain}}_ipv4
       - iptables: iptables_policy_{{table}}_{{chain}}_ipv6
@@ -125,8 +157,6 @@ iptables_policy_{{table}}_{{chain}}_{{ ipfamily }}:
     - chain: {{chain|upper}}
     - policy: {{policy|upper}}
     - family: {{ ipfamily }}
-    - require:
-      - iptables: iptables_reset_policy_*
     {%- endfor %}
 
   {%- endfor %}
