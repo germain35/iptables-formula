@@ -11,7 +11,7 @@ include:
 
 {%- for chain in ['INPUT', 'FORWARD', 'OUTPUT'] %}
   {%- for ipfamily in ['ipv4', 'ipv6'] %}
-iptables_reset_policy_filter_{{ ipfamily }}:
+iptables_reset_policy_filter_{{ chain }}_{{ ipfamily }}:
   iptables.set_policy:
     - table: filter
     - chain: {{ chain }}
@@ -24,7 +24,7 @@ iptables_reset_policy_filter_{{ ipfamily }}:
 
 {%- for chain in ['PREROUTING', 'INPUT', 'FORWARD', 'OUTPUT', 'POSTROUTING'] %}
   {%- for ipfamily in ['ipv4', 'ipv6'] %}
-iptables_reset_policy_mangle_{{ ipfamily }}:
+iptables_reset_policy_mangle_{{ chain }}_{{ ipfamily }}:
   iptables.set_policy:
     - table: mangle
     - chain: {{ chain }}
@@ -37,7 +37,7 @@ iptables_reset_policy_mangle_{{ ipfamily }}:
 
 {%- for chain in ['PREROUTING', 'INPUT', 'OUTPUT', 'POSTROUTING'] %}
   {%- for ipfamily in ['ipv4', 'ipv6'] %}
-iptables_reset_policy_nat_{{ ipfamily }}:
+iptables_reset_policy_nat_{{ chain }}_{{ ipfamily }}:
   iptables.set_policy:
     - table: nat
     - chain: {{ chain }}
