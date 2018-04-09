@@ -157,6 +157,7 @@ iptables_policy_{{table}}_{{chain}}_{{ ipfamily }}:
     - chain: {{chain|upper}}
     - policy: {{policy|upper}}
     - family: {{ ipfamily }}
+    - save: True
     {%- endfor %}
 
   {%- endfor %}
